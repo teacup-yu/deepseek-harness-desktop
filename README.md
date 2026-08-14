@@ -1,2 +1,68 @@
-# deepseek-harness-desktop
-deepseek-harness-desktop deepseek  harness  electron  terminal  desktop-app
+# DeepSeek Harness Desktop
+
+把 [DeepSeek Harness](https://www.npmjs.com/package/@deepseek-ai/dsh)(`dsh`)封装成 **Windows 桌面应用**:不需要 Node.js、不需要命令行,下载安装包双击就能用,像普通软件一样。
+
+> ⚠️ 第三方封装项目,与 DeepSeek 官方无关。核心能力来自 npm 包 `@deepseek-ai/dsh`。
+
+## 特性
+
+- **开箱即用**:安装包内置完整 dsh 运行时(约 200 MB),不依赖 Node.js / pnpm / 浏览器
+- **原生桌面窗口**:无边框标题栏 + 圆角,主题自动跟随应用内的明暗设置
+- **内置终端面板**:VS Code 式多会话终端(Ctrl+T 新建/切换),完整 PowerShell 环境,可以直接执行 dsh 的全部 CLI 功能
+- **静默自动更新**:
+  - 启动后与每小时自动检查 GitHub Releases;**发现新版只通知不打扰**——标题栏胶囊 + ☰ 红点,不弹窗、不自动下载
+  - 点开胶囊 → 详情弹窗 → 手动点"下载"才开始后台下载,进度实时显示在标题栏胶囊
+  - 下载完成点"安装",自动退出应用并打开 NSIS 安装向导
+- **数据与 CLI 共享**:会话、凭据、设置都在 `%USERPROFILE%\.dsh`,桌面版与命令行版互通
+
+## 安装
+
+1. 到 [Releases](../../releases/latest) 下载最新的 `DeepSeek-Harness-Setup-<版本>.exe`
+2. 双击安装(可自选安装目录),按提示走完向导
+3. 从开始菜单 / 桌面快捷方式启动
+
+首次启动会把内置运行时解压到 `%LOCALAPPDATA%\dsh-exe\`(约 1~2 分钟);之后秒开。
+
+> 💡 Windows SmartScreen:安装包未做商业代码签名,首次运行如遇提示,选"更多信息 → 仍要运行"即可。
+
+## 使用
+
+- 主窗口就是 dsh 的 Web 界面,登录与使用方式和网页版一致
+- 窗口右上角 **☰ 菜单**:
+  - **切换终端面板**(Ctrl+T):内置多会话终端,支持新建 / 关闭 / 最大化,自动复用会话编号
+  - **版本更新**:手动检查更新;发现新版后由你决定是否下载
+  - **关于**:版本信息与许可证
+- 外部链接一律用系统浏览器打开
+
+## 版本更新是怎么工作的
+
+1. 应用启动 15 秒后、之后每小时,静默检查一次 GitHub Releases
+2. 发现新版本 → 标题栏胶囊"发现新版本 vX" + ☰ 红点(**纯通知,不下载不弹窗**)
+3. 点胶囊 → 详情弹窗 → 点"下载" → 后台下载(胶囊显示真实进度,弹窗可随时关闭)
+4. 下载完成 → 胶囊变"更新就绪 vX" → 点"安装" → 关闭应用并弹出安装向导
+5. 发布侧采用"**先草稿、传完再发布**"策略:上传中断或失败绝不会污染更新通道
+
+## 开发者构建(仅 Windows x64)
+
+```powershell
+# 桌面应用(需先准备好 desktop/vendor/dsh.exe 与图标资源)
+cd desktop
+npx electron-builder --win nsis --publish never
+```
+
+本地流水线:
+
+- `desktop/` — Electron 外壳:主进程 / 预加载桥 / 无边框 shell、xterm 终端面板、electron-updater 自动更新
+- `build/` — `dsh.exe` 的 SEA 打包流水线(Node SEA + postject,payload 内置 node.exe 与完整依赖)
+- `update.ps1` — 开发者更新:拉取官方 dsh 新版 → 融合重建 → 本地打包
+- `push-github.ps1` — 推送到 GitHub Releases(草稿 → 上传 → 发布)
+
+## 注意事项
+
+- 仅支持 Windows x64(原生依赖按 win32-x64 打包)
+- 首次启动需要解压约 200 MB 运行时到 `%LOCALAPPDATA%`
+- 本项目为第三方封装,与 DeepSeek 官方无关;`dsh` 本身版权归 DeepSeek 所有
+
+## License
+
+[MIT](LICENSE) © teacup-yu
