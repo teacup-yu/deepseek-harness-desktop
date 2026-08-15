@@ -47,21 +47,6 @@
 4. 下载完成 → 胶囊变"更新就绪 vX" → 点"安装" → 关闭应用并弹出安装向导
 5. 发布侧采用"**先草稿、传完再发布**"策略:上传中断或失败绝不会污染更新通道
 
-## 开发者构建(仅 Windows x64)
-
-```powershell
-# 桌面应用(需先准备好 desktop/vendor/dsh.exe 与图标资源)
-cd desktop
-npx electron-builder --win nsis --publish never
-```
-
-本地流水线:
-
-- `desktop/` — Electron 外壳:主进程 / 预加载桥 / 无边框 shell、xterm 终端面板、electron-updater 自动更新
-- `build/` — `dsh.exe` 的 SEA 打包流水线(Node SEA + postject,payload 内置 node.exe 与完整依赖)
-- `update.ps1` — 开发者更新:拉取官方 dsh 新版 → 融合重建 → 本地打包
-- `push-github.ps1` — 推送到 GitHub Releases(草稿 → 上传 → 发布)
-
 ## 注意事项
 
 - 仅支持 Windows x64(原生依赖按 win32-x64 打包)
